@@ -19,6 +19,6 @@ pub fn encode(input: &[u8], output: &mut Vec<u8>) {
             output.as_mut_ptr(),
         );
         assert!(len as usize <= output_len);
-        // output.resize(len as usize, 0);
+        output.resize(len as usize, 0);
     }
 }
