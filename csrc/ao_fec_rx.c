@@ -47,8 +47,8 @@ static const uint8_t ao_interleave_order[] = {
 	0x18, 0x10, 0x08, 0x00
 };
 
-static inline uint16_t ao_interleave_index(uint16_t i) {
-	return (uint16_t) ((i & ~0x1e) | ao_interleave_order[(i & 0x1e) >> 1]);
+static inline size_t ao_interleave_index(size_t i) {
+	return (size_t) ((i & ~0x1e) | ao_interleave_order[(i & 0x1e) >> 1]);
 }
 
 #define NUM_STATE	8
@@ -85,13 +85,13 @@ ao_next_state(uint8_t state, uint8_t bit)
  * 'len'/16 bytes long
  */
 
-uint8_t
-ao_fec_decode(const uint8_t *in, uint16_t len, uint8_t *out, uint8_t out_len, uint16_t (*callback)(void))
+int
+ao_fec_decode(const uint8_t *in, size_t len, uint8_t *out, size_t out_len)
 {
 	static uint32_t	cost[2][NUM_STATE];		/* path cost */
 	static bits_t	bits[2][NUM_STATE];		/* save bits to quickly output them */
 
-	uint16_t	i;				/* input byte index */
+	size_t		i;				/* input byte index */
 	uint16_t	b;				/* encoded symbol index (bytes/2) */
 	uint16_t	o;				/* output bit index */
 	uint8_t		p;				/* previous cost/bits index */
@@ -100,11 +100,8 @@ ao_fec_decode(const uint8_t *in, uint16_t len, uint8_t *out, uint8_t out_len, ui
 	const uint8_t	*whiten = ao_fec_whiten_table;
 	uint16_t	interleave;			/* input byte array index */
 	uint8_t		s0, s1;
-	uint16_t	avail;
+	size_t		avail = len;
 	uint16_t	crc = AO_FEC_CRC_INIT;
-#if AO_PROFILE
-	uint32_t	start_tick;
-#endif
 
 	p = 0;
 	for (state = 0; state < NUM_STATE; state++) {
@@ -113,28 +110,13 @@ ao_fec_decode(const uint8_t *in, uint16_t len, uint8_t *out, uint8_t out_len, ui
 	}
 	cost[0][0] = 0;
 
-	if (callback)
-		avail = 0;
-	else
-		avail = len;
-
-#if AO_PROFILE
-	if (!avail) {
-		avail = callback();
-		if (!avail)
-			return 0;
-	}
-	start_tick = ao_profile_tick();
-#endif
 	o = 0;
 	for (i = 0; i < len; i += 2) {
 		b = i/2;
 		n = p ^ 1;
 
 		if (!avail) {
-			avail = callback();
-			if (!avail)
-				return 0;
+                    return 0;
 		}
 
 		/* Fetch one pair of input bytes, de-interleaving
@@ -229,13 +211,6 @@ ao_fec_decode(const uint8_t *in, uint16_t len, uint8_t *out, uint8_t out_len, ui
 		DO_STATE(2);
 		DO_STATE(3);
 
-#if 0
-		printf ("bit %3d symbol %2x %2x:", i/2, s0, s1);
-		for (state = 0; state < NUM_STATE; state++) {
-			printf (" %8u(%08x)", cost[n][state], bits[n][state]);
-		}
-		printf ("\n");
-#endif
 		p = n;
 
 		/* A loop is needed to handle the last output byte. It
@@ -278,10 +253,6 @@ ao_fec_decode(const uint8_t *in, uint16_t len, uint8_t *out, uint8_t out_len, ui
 				dist = 0;
 			}
 
-#if 0
-			printf ("\tbit %3d min_cost %5d old bit %3d old_state %x bits %02x whiten %0x\n",
-				i/2, min_cost, o + 8, min_state, (bits[p][min_state] >> dist) & 0xff, *whiten);
-#endif
 			byte = (uint8_t) ((bits[p][min_state] >> dist) ^ *whiten++);
 			*out++ = byte;
 			if (out_len > 2)
@@ -300,9 +271,5 @@ ao_fec_decode(const uint8_t *in, uint16_t len, uint8_t *out, uint8_t out_len, ui
 		}
 	}
 done:
-#if AO_PROFILE
-	ao_fec_decode_start = start_tick;
-	ao_fec_decode_end = ao_profile_tick();
-#endif
 	return 1;
 }

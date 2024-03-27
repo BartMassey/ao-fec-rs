@@ -20,17 +20,12 @@
 #define _AO_FEC_H_
 
 #include <stdint.h>
+#include <stddef.h>
 
 #define AO_FEC_CRC_INIT			0xffff
 #define AO_FEC_TRELLIS_TERMINATOR	0x0b
-#define AO_FEC_PREPARE_EXTRA		4
 
 extern const uint8_t ao_fec_whiten_table[];
-
-#if AO_FEC_DEBUG
-void
-ao_fec_dump_bytes(const uint8_t *bytes, uint16_t len, const char *name);
-#endif
 
 static inline uint16_t
 ao_fec_crc_byte(uint8_t byte, uint16_t crc)
@@ -47,39 +42,46 @@ ao_fec_crc_byte(uint8_t byte, uint16_t crc)
 	return crc;
 }
 
-uint16_t
-ao_fec_crc(const uint8_t *bytes, uint8_t len);
+extern uint16_t
+ao_fec_crc(const uint8_t *bytes, size_t len);
 
 /*
  * 'len' is the length of the original data; 'bytes'
  * must  be four bytes longer than that, and the first
  * two after 'len' must be the received crc
  */
-uint8_t
-ao_fec_check_crc(const uint8_t *bytes, uint8_t len);
+extern int
+ao_fec_check_crc(const uint8_t *bytes, size_t len);
 
 /*
- * Compute CRC, whiten, convolve and interleave data. 'out' must be (len + 4) * 2 bytes long
+ * Number of bytes needed for encoder output array for input
+ * length LEN.
  */
-uint8_t
-ao_fec_encode(const uint8_t *in, uint8_t len, uint8_t *out);
+#define AOC_FEC_ENCODE_LEN(LEN) (2 * (((LEN) + 4) & ~1))
+
+/*
+ * Compute CRC, whiten, convolve and interleave data. 'out' must be
+ * AOC_FEC_ENCODE_LEN(len) bytes long.
+ */
+extern size_t
+ao_fec_encode(const uint8_t *in, size_t len, uint8_t *out);
+
+/*
+ * Number of bytes needed for decoder output array for input
+ * length LEN.
+ */
+#define AOC_FEC_DECODE_LEN(LEN) ((LEN) / 8)
 
 /*
  * Decode data. 'in' is one byte per bit, soft decision
- * 'out' must be len/8 bytes long
+ * 'out' must be AOC_FEC_DECODE_LEN(LEN) bytes long
  */
 
 #define AO_FEC_DECODE_BLOCK	(32)	/* callback must return multiples of this many bits */
 
 #define AO_FEC_DECODE_CRC_OK	0x80	/* stored in out[out_len-1] */
 
-uint8_t
-ao_fec_decode(const uint8_t *in, uint16_t in_len, uint8_t *out, uint8_t out_len, uint16_t (*callback)(void));
-
-/*
- * Interleave data packed in bytes. 'out' must be 'len' bytes long.
- */
-uint16_t
-ao_fec_interleave_bytes(uint8_t *in, uint16_t len, uint8_t *out);
+extern int
+ao_fec_decode(const uint8_t *in, size_t in_len, uint8_t *out, size_t out_len);
 
 #endif /* _AO_FEC_H_ */

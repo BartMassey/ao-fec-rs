@@ -19,7 +19,7 @@
 #include "ao_fec.h"
 
 uint16_t
-ao_fec_crc(const uint8_t *bytes, uint8_t len)
+ao_fec_crc(const uint8_t *bytes, size_t len)
 {
 	uint16_t	crc = AO_FEC_CRC_INIT;
 
@@ -33,8 +33,8 @@ ao_fec_crc(const uint8_t *bytes, uint8_t len)
  * the fist two bytes after that
  */
 
-uint8_t
-ao_fec_check_crc(const uint8_t *bytes, uint8_t len)
+int
+ao_fec_check_crc(const uint8_t *bytes, size_t len)
 {
 	uint16_t	computed_crc = ao_fec_crc(bytes, len);
 	uint16_t	received_crc = (uint16_t) ((bytes[len] << 8) | (bytes[len+1]));
@@ -45,8 +45,8 @@ ao_fec_check_crc(const uint8_t *bytes, uint8_t len)
 /*
  * Compute CRC and trellis-terminator/interleave-pad bytes
  */
-static uint8_t
-ao_fec_prepare(const uint8_t *in, uint8_t len, uint8_t *extra)
+static size_t
+ao_fec_prepare(const uint8_t *in, size_t len, uint8_t *extra)
 {
 	uint16_t	crc = ao_fec_crc (in, len);
 	uint8_t		i = 0;
@@ -79,11 +79,15 @@ static const uint8_t ao_fec_encode_table[16] = {
 	1, 2	/* 111 */
 };
 
-uint8_t
-ao_fec_encode(const uint8_t *in, uint8_t len, uint8_t *out)
+size_t
+ao_fec_encode(const uint8_t *in, size_t len, uint8_t *out)
 {
-	uint8_t		extra[AO_FEC_PREPARE_EXTRA];
-	uint8_t 	extra_len;
+	/*
+	 * There will be at most 4 "extra" bytes:
+	 * 2 for CRC and 1 or 2 for FEC runout.
+	 */
+	uint8_t		extra[4];
+	size_t 		extra_len;
 	uint32_t	encode, interleave;
 	uint8_t		pair, byte, bit;
 	uint16_t	fec = 0;
