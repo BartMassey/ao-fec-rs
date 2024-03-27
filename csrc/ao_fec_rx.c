@@ -85,14 +85,15 @@ ao_next_state(uint8_t state, uint8_t bit)
  * 'len'/16 bytes long
  */
 
-int
-ao_fec_decode(const uint8_t *in, size_t len, uint8_t *out, size_t out_len)
+void
+ao_fec_decode(const uint8_t *in, size_t len, uint8_t *out)
 {
 	static uint32_t	cost[2][NUM_STATE];		/* path cost */
 	static bits_t	bits[2][NUM_STATE];		/* save bits to quickly output them */
 
+	size_t		out_len = AOC_FEC_DECODE_LEN(len);   /* output length */
 	size_t		i;				/* input byte index */
-	uint16_t	b;				/* encoded symbol index (bytes/2) */
+	size_t		b;				/* encoded symbol index (bytes/2) */
 	uint16_t	o;				/* output bit index */
 	uint8_t		p;				/* previous cost/bits index */
 	uint8_t		n;				/* next cost/bits index */
@@ -100,7 +101,6 @@ ao_fec_decode(const uint8_t *in, size_t len, uint8_t *out, size_t out_len)
 	const uint8_t	*whiten = ao_fec_whiten_table;
 	uint16_t	interleave;			/* input byte array index */
 	uint8_t		s0, s1;
-	size_t		avail = len;
 	uint16_t	crc = AO_FEC_CRC_INIT;
 
 	p = 0;
@@ -115,18 +115,12 @@ ao_fec_decode(const uint8_t *in, size_t len, uint8_t *out, size_t out_len)
 		b = i/2;
 		n = p ^ 1;
 
-		if (!avail) {
-                    return 0;
-		}
-
 		/* Fetch one pair of input bytes, de-interleaving
 		 * the input.
 		 */
 		interleave = ao_interleave_index(i);
 		s0 = in[interleave];
 		s1 = in[interleave+1];
-
-		avail -= 2;
 
 		/* Compute path costs and accumulate output bit path
 		 * for each state and encoded bit value. Unrolling
@@ -265,11 +259,9 @@ ao_fec_decode(const uint8_t *in, size_t len, uint8_t *out, size_t out_len)
 				else
 					out[-1] = 0;
 				out[-2] = 0;
-				goto done;
+				return;
 			}
 			o += 8;
 		}
 	}
-done:
-	return 1;
 }

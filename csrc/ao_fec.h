@@ -67,10 +67,10 @@ extern size_t
 ao_fec_encode(const uint8_t *in, size_t len, uint8_t *out);
 
 /*
- * Number of bytes needed for decoder output array for input
- * length LEN.
+ * Number of bytes needed for decoder output array for soft
+ * input length LEN.
  */
-#define AOC_FEC_DECODE_LEN(LEN) ((LEN) / 8)
+#define AOC_FEC_DECODE_LEN(LEN) ((LEN) / 16)
 
 /*
  * Decode data. 'in' is one byte per bit, soft decision
@@ -81,7 +81,7 @@ ao_fec_encode(const uint8_t *in, size_t len, uint8_t *out);
 
 #define AO_FEC_DECODE_CRC_OK	0x80	/* stored in out[out_len-1] */
 
-extern int
-ao_fec_decode(const uint8_t *in, size_t in_len, uint8_t *out, size_t out_len);
+extern void
+ao_fec_decode(const uint8_t *in, size_t in_len, uint8_t *out);
 
 #endif /* _AO_FEC_H_ */

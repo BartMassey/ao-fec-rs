@@ -3,7 +3,8 @@ Bart Massey 2024
 
 This Rust library crate wraps Keith Packard's Forward Error
 Correction C code from AltOS <git:git.gag.com/fw/altos>.
-See the `csrc/` directory for the underlying code.
+See the `csrc/` directory for the underlying code and
+details.
 
 # Acknowledgments
 
