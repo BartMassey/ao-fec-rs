@@ -25,7 +25,7 @@
 #define AO_FEC_CRC_INIT			0xffff
 #define AO_FEC_TRELLIS_TERMINATOR	0x0b
 
-extern const uint8_t ao_fec_whiten_table[];
+extern const uint8_t ao_fec_whiten_table[128];
 
 static inline uint16_t
 ao_fec_crc_byte(uint8_t byte, uint16_t crc)

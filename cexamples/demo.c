@@ -182,7 +182,7 @@ ssize_t decode(uint8_t *input, size_t input_len, uint8_t **output, size_t output
     uint8_t soft[soft_len];
     for (size_t i = 0; i < input_len; i++) {
         for (size_t j = 0; j < 8; j++) {
-            soft[8 * i + j] = ((input[i] >> (7-j)) & 1) ? 0x00 : 0xff;
+            soft[8 * i + j] = 0xff * ((input[i] >> (7 - j)) & 1);
         }
     }
     printf("Transmit (%lu):", soft_len);
@@ -195,22 +195,17 @@ ssize_t decode(uint8_t *input, size_t input_len, uint8_t **output, size_t output
 
     printf("input_len = %ld\n", input_len);
     printf("soft_len = %ld\n", soft_len);
-    printf("output_len = %ld\n", output_len);
-    assert(output_len <= 256);
+    printf("decode_len = %ld\n", decode_len);
     static uint8_t decoded[256];
+    assert(output_len <= 252);
     ao_fec_decode(soft, soft_len, decoded, output_len);
     if (decoded[output_len-1] != AO_FEC_DECODE_CRC_OK) {
 	printf("CRC check failed\n");
-        return -1;
-    }
-    if (!decoded[output_len - 1]) {
-        for (size_t i = 0; i < output_len; i++) {
-            uint8_t byte = decoded[i];
-            printf("d[%ld] = %d (%c)\n", i, byte, byte);
+        for (size_t i = output_len - 2; i < output_len; i++) {
+            printf("d[%ld] = %02x\n", i, decoded[i]);
         }
         return -1;
     }
-
     *output = decoded;
     return output_len;
 }

@@ -63,7 +63,7 @@ ao_fec_prepare(const uint8_t *in, size_t len, uint8_t *extra)
 	return i;
 }
 
-const uint8_t ao_fec_whiten_table[] = {
+const uint8_t ao_fec_whiten_table[128] = {
 #include "ao_whiten.h"
 };
 
@@ -91,7 +91,8 @@ ao_fec_encode(const uint8_t *in, size_t len, uint8_t *out)
 	uint32_t	encode, interleave;
 	uint8_t		pair, byte, bit;
 	uint16_t	fec = 0;
-	const uint8_t	*whiten = ao_fec_whiten_table;
+	size_t		whiten_index = 0;
+        uint8_t		out_byte;
 
 	extra_len = ao_fec_prepare(in, len, extra);
 	for (pair = 0; pair < len + extra_len; pair += 2) {
@@ -99,7 +100,10 @@ ao_fec_encode(const uint8_t *in, size_t len, uint8_t *out)
 		for (byte = 0; byte < 2; byte++) {
 			if (pair + byte == len)
 				in = extra;
-			fec |= (uint16_t) (*in++ ^ *whiten++);
+                        out_byte = *in++;
+                        out_byte ^= ao_fec_whiten_table[whiten_index];
+                        whiten_index = (whiten_index + 1) & 0x7f;
+			fec |= (uint16_t) out_byte;
 			for (bit = 0; bit < 8; bit++) {
 				encode = encode << 2 | ao_fec_encode_table[fec >> 7];
 				fec = (fec << 1) & 0x7ff;

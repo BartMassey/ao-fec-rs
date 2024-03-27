@@ -99,7 +99,7 @@ ao_fec_decode(const uint8_t *in, size_t len, uint8_t *out, size_t out_len)
 	uint8_t		p;				/* previous cost/bits index */
 	uint8_t		n;				/* next cost/bits index */
 	uint8_t		state;				/* state index */
-	const uint8_t	*whiten = ao_fec_whiten_table;
+	size_t		whiten_index = 0;		/* index into whiten table */
 	uint16_t	interleave;			/* input byte array index */
 	uint8_t		s0, s1;
 	uint16_t	crc = AO_FEC_CRC_INIT;
@@ -248,7 +248,9 @@ ao_fec_decode(const uint8_t *in, size_t len, uint8_t *out, size_t out_len)
 				dist = 0;
 			}
 
-			byte = (uint8_t) ((bits[p][min_state] >> dist) ^ *whiten++);
+			byte = (uint8_t) (bits[p][min_state] >> dist);
+                        byte ^= ao_fec_whiten_table[whiten_index];
+                        whiten_index = (whiten_index + 1) & 0x7f;
 			*out++ = byte;
 			if (out_len > 2)
 				crc = ao_fec_crc_byte(byte, crc);
