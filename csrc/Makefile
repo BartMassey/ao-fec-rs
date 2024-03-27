@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -O3 -Wall -Werror
+CFLAGS = -Wall -Werror -g # -O3 
 
 OBJS = ao_fec_tx.o ao_fec_rx.o
 
