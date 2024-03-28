@@ -196,7 +196,7 @@ ssize_t decode(uint8_t *input, size_t input_len, uint8_t **output, size_t output
 
     printf("input_len = %ld\n", input_len);
     printf("soft_len = %ld\n", soft_len);
-    printf("decode_len = %ld\n", decode_len);
+    printf("output_len = %ld\n", output_len);
     static uint8_t decoded[256];
     assert(output_len <= 252);
     ao_fec_decode(soft, soft_len, decoded, output_len);
