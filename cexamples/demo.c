@@ -182,7 +182,7 @@ ssize_t decode(uint8_t *input, size_t input_len, uint8_t **output, size_t output
     uint8_t soft[soft_len];
     for (size_t i = 0; i < input_len; i++) {
         for (size_t j = 0; j < 8; j++) {
-            soft[8 * i + j] = 0xff * ((input[i] >> (7 - j)) & 1);
+            soft[8 * i + j] = 0xff * !((input[i] >> (7 - j)) & 1);
         }
     }
     printf("Transmit (%lu):", soft_len);
@@ -211,7 +211,6 @@ ssize_t decode(uint8_t *input, size_t input_len, uint8_t **output, size_t output
 }
 
 int main() {
-
     ao_real_packet();
 
     uint8_t input[] = "hello";
