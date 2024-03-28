@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <ao_fec.h>
+#include <string.h>
 
 static uint8_t real_packet[] = {
  0x40, 0x38, 0xcd, 0x38, 0x3d, 0x34, 0xca, 0x31, 0xc3, 0xc1, 0xc6, 0x35, 0xcc, 0x3a, 0x3c,
@@ -210,11 +211,15 @@ ssize_t decode(uint8_t *input, size_t input_len, uint8_t **output, size_t output
     return output_len;
 }
 
-int main() {
+int main(int argc, char **argv) {
     ao_real_packet();
 
-    uint8_t input[] = "hello";
-    size_t nbytes = sizeof(input) - 1;
+    uint8_t *input = (uint8_t *) "hello";
+    if (argc > 1) {
+        assert(argc == 2);
+        input = (uint8_t *) argv[1];
+    }
+    size_t nbytes = strlen((char *) input);
     uint8_t packet[AOC_FEC_ENCODE_LEN(nbytes)];
     size_t len = encode(input, nbytes, packet);
     for (size_t i = 0; i < len; i++) {
