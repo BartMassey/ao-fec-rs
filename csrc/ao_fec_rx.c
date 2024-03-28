@@ -17,6 +17,7 @@
  */
 
 #include "ao_fec.h"
+#include <stdio.h>
 
 /* 
  * byte order repeats through 3 2 1 0
@@ -86,12 +87,12 @@ ao_next_state(uint8_t state, uint8_t bit)
  */
 
 void
-ao_fec_decode(const uint8_t *in, size_t len, uint8_t *out)
+ao_fec_decode(const uint8_t *in, size_t len, uint8_t *out, size_t out_len)
 {
 	static uint32_t	cost[2][NUM_STATE];		/* path cost */
 	static bits_t	bits[2][NUM_STATE];		/* save bits to quickly output them */
 
-	size_t		out_len = AOC_FEC_DECODE_LEN(len);   /* output length */
+	printf("out_len %u\n", (unsigned) out_len);
 	size_t		i;				/* input byte index */
 	size_t		b;				/* encoded symbol index (bytes/2) */
 	uint16_t	o;				/* output bit index */
