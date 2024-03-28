@@ -12,3 +12,5 @@ clean:
 	-rm -f demo demo.o
 
 frc:
+
+demo.o: ../csrc/ao_fec.h

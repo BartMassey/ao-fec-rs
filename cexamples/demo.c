@@ -177,27 +177,34 @@ size_t encode(uint8_t *input, size_t len, uint8_t *output) {
     return result_len;
 }
 
-ptrdiff_t decode(uint8_t *input, size_t input_len, uint8_t **output) {
+ssize_t decode(uint8_t *input, size_t input_len, uint8_t **output, size_t output_len) {
     size_t soft_len = 8 * input_len;
     uint8_t soft[soft_len];
     for (size_t i = 0; i < input_len; i++) {
         for (size_t j = 0; j < 8; j++) {
-            soft[8 * i + j] = 0xff * ((input[i] >> j) & 1);
+            soft[8 * i + j] = ((input[i] >> (7-j)) & 1) ? 0x00 : 0xff;
         }
     }
+    printf("Transmit (%lu):", soft_len);
+    for(size_t i = 0; i < soft_len; i++) {
+	if ((i & 7) == 0)
+	    printf("\n\t%02lx:", i);
+	printf(" %02x", soft[i]);
+    }
+    printf("\n");
 
-    size_t decode_len = AOC_FEC_DECODE_LEN(soft_len);
     printf("input_len = %ld\n", input_len);
     printf("soft_len = %ld\n", soft_len);
-    printf("decode_len = %ld\n", decode_len);
-    assert(decode_len <= 256);
+    printf("output_len = %ld\n", output_len);
+    assert(output_len <= 256);
     static uint8_t decoded[256];
-    int decode_result = ao_fec_decode(soft, soft_len, decoded, decode_len);
-    if (!decode_result) {
+    ao_fec_decode(soft, soft_len, decoded, output_len);
+    if (decoded[output_len-1] != AO_FEC_DECODE_CRC_OK) {
+	printf("CRC check failed\n");
         return -1;
     }
-    if (!decoded[decode_len - 1]) {
-        for (size_t i = 0; i < decode_len; i++) {
+    if (!decoded[output_len - 1]) {
+        for (size_t i = 0; i < output_len; i++) {
             uint8_t byte = decoded[i];
             printf("d[%ld] = %d (%c)\n", i, byte, byte);
         }
@@ -205,7 +212,7 @@ ptrdiff_t decode(uint8_t *input, size_t input_len, uint8_t **output) {
     }
 
     *output = decoded;
-    return (ptrdiff_t) decode_len - 1;
+    return output_len;
 }
 
 int main() {
@@ -221,7 +228,7 @@ int main() {
     }
 
     uint8_t *decoded;
-    ptrdiff_t result = decode(packet, len, &decoded);
+    ptrdiff_t result = decode(packet, len, &decoded, nbytes + 2);
     if (result == -1) {
         printf("decode failed\n");
         return 1;
