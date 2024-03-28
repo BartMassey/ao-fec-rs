@@ -9,7 +9,8 @@ details.
 # Acknowledgments
 
 The hard part of this is obviously Keith Packard's
-work. Thanks much!
+work. Thanks much! Thanks also to Keith for helping me debug
+and test this.
 
 # License
 
