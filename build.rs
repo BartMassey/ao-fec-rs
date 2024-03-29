@@ -1,9 +1,6 @@
 fn main() {
-    let status = std::process::Command::new("make")
-        .current_dir("ao-fec/src")
-        .status()
-        .expect("make failed to run");
-    assert!(status.success(), "make failed");
-    println!("cargo::rustc-link-search=ao-fec/src");
-    println!("cargo::rustc-link-lib=ao_fec");
+    cc::Build::new()
+        .file("ao-fec/src/ao_fec_tx.c")
+        .file("ao-fec/src/ao_fec_rx.c")
+        .compile("ao_fec");
 }
