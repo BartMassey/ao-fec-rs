@@ -34,12 +34,12 @@ pub fn decode<'a>(
 ) -> Result<&'a [u8], DecodeError> {
     let ninput = input.len();
     let noutput = output.len();
-    assert_eq!(noutput, decode_len(ninput));
     unsafe {
         ao_fec_decode(
             input.as_ptr(),
             ninput,
             output.as_mut_ptr(),
+            noutput,
         );
 
         if output[noutput - 1] == 0 {

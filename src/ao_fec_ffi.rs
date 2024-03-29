@@ -4,5 +4,5 @@ extern "C" {
     pub fn ao_fec_encode(in_: *const u8, len: usize, out: *mut u8) -> usize;
 }
 extern "C" {
-    pub fn ao_fec_decode(in_: *const u8, in_len: usize, out: *mut u8);
+    pub fn ao_fec_decode(in_: *const u8, in_len: usize, out: *mut u8, out_len: usize);
 }

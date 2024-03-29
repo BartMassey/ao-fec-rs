@@ -83,7 +83,7 @@ ao_next_state(uint8_t state, uint8_t bit)
 /*
  * 'in' is 8-bits per symbol soft decision data
  * 'len' is input byte length. 'out' must be
- * 'len'/16 bytes long
+ * 'the length of the encoded data.
  */
 
 void
@@ -92,7 +92,6 @@ ao_fec_decode(const uint8_t *in, size_t len, uint8_t *out, size_t out_len)
 	static uint32_t	cost[2][NUM_STATE];		/* path cost */
 	static bits_t	bits[2][NUM_STATE];		/* save bits to quickly output them */
 
-	printf("out_len %u\n", (unsigned) out_len);
 	size_t		i;				/* input byte index */
 	size_t		b;				/* encoded symbol index (bytes/2) */
 	uint16_t	o;				/* output bit index */
@@ -208,10 +207,12 @@ ao_fec_decode(const uint8_t *in, size_t len, uint8_t *out, size_t out_len)
 
 		p = n;
 
-		/* A loop is needed to handle the last output byte. It
-		 * won't have any bits of future data to perform full
-		 * error correction, but we might as well give the
-		 * best possible answer anyways.
+		/* This loop will run only once except on
+		 * the last output byte. In that case, it
+		 * won't have any bits of future data to
+		 * perform full error correction, but we
+		 * might as well give the best possible
+		 * answer anyways.
 		 */
 		while ((b - o) >= (8 + NUM_HIST) || (i + 2 >= len && b > o)) {
 
