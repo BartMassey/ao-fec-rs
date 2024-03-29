@@ -1,6 +1,7 @@
 pub mod ao_fec_ffi;
 use ao_fec_ffi::*;
 
+/// 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DecodeError {
     ChecksumMismatch,

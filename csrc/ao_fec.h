@@ -66,21 +66,16 @@ ao_fec_check_crc(const uint8_t *bytes, size_t len);
 extern size_t
 ao_fec_encode(const uint8_t *in, size_t len, uint8_t *out);
 
-/*
- * Number of bytes needed for decoder output array for soft
- * input length LEN.
- */
-#define AOC_FEC_DECODE_LEN(LEN) ((LEN) / 16)
-
-/*
- * Decode data. 'in' is one byte per bit, soft decision
- * 'out' must be AOC_FEC_DECODE_LEN(LEN) bytes long
- */
-
-#define AO_FEC_DECODE_BLOCK	(32)	/* callback must return multiples of this many bits */
-
 #define AO_FEC_DECODE_CRC_OK	0x80	/* stored in out[out_len-1] */
 
+/*
+ * Decode data. 'in' is one byte per bit soft decision.
+ * Bits are MSB..LSB. For soft decision 0xff..0x00 is 0..1
+ * (inverted). 'out_len` is length of expected decode
+ * including 2 bytes used for CRC-16 checksum. On return,
+ * the last two bytes will be 0x00,0x00 if checksum failed,
+ * or 0x00,0x80 if checksum passed.
+ */
 extern void
 ao_fec_decode(const uint8_t *in, size_t in_len, uint8_t *out, size_t out_len);
 

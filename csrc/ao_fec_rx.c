@@ -80,12 +80,6 @@ ao_next_state(uint8_t state, uint8_t bit)
 	return ((state << 1) | bit) & 0x7;
 }
 
-/*
- * 'in' is 8-bits per symbol soft decision data
- * 'len' is input byte length. 'out' must be
- * 'the length of the encoded data.
- */
-
 void
 ao_fec_decode(const uint8_t *in, size_t len, uint8_t *out, size_t out_len)
 {
