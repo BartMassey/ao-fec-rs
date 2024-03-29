@@ -4,6 +4,7 @@ use ao_fec_ffi::*;
 /// 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DecodeError {
+    OutputLengthError,
     ChecksumMismatch,
 }
 
@@ -36,15 +37,18 @@ pub fn decode<'a>(
     let ninput = input.len();
     let noutput = output.len();
     unsafe {
-        ao_fec_decode(
+        let ok = ao_fec_decode(
             input.as_ptr(),
             ninput,
             output.as_mut_ptr(),
             noutput,
         );
 
-        if output[noutput - 1] == 0 {
-            return Err(DecodeError::ChecksumMismatch);
+        if ok == -1 {
+            if output[noutput - 1] == 0 {
+                return Err(DecodeError::ChecksumMismatch);
+            }
+            return Err(DecodeError::OutputLengthError);
         }
     }
     Ok(&output[..noutput - 2])
