@@ -1,0 +1,3 @@
+[submodule "ao-fec"]
+	path = ao-fec
+	url = http://github.com/BartMassey/ao-fec
